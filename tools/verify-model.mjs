@@ -1,0 +1,13 @@
+import {NodeIO} from '@gltf-transform/core';
+import {ALL_EXTENSIONS} from '@gltf-transform/extensions';
+import {MeshoptDecoder} from 'meshoptimizer';
+import fs from 'node:fs';
+import crypto from 'node:crypto';
+const io=new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({'meshopt.decoder':MeshoptDecoder});
+const a=await io.read('source-assets/KUKA+Display.glb'),b=await io.read('public/assets/kuka-display.web.glb');
+const describe=d=>d.getRoot().listNodes().map(n=>({name:n.getName(),translation:n.getTranslation(),rotation:n.getRotation(),scale:n.getScale(),children:n.listChildren().map(c=>c.getName())}));
+const triangles=d=>d.getRoot().listMeshes().reduce((s,m)=>s+m.listPrimitives().reduce((t,p)=>t+(p.getIndices()?.getCount()||p.getAttribute('POSITION').getCount())/3,0),0);
+const hash=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+const report={sourceHash:hash('source-assets/KUKA+Display.glb'),downloadsOriginalHash:hash('C:/Users/CFT 02/Downloads/KUKA+Display.glb'),nodeTransformsAndHierarchyUnchanged:JSON.stringify(describe(a))===JSON.stringify(describe(b)),originalTriangles:triangles(a),webTriangles:triangles(b),sourceSkins:a.getRoot().listSkins().length,webSkins:b.getRoot().listSkins().length,sourceClips:a.getRoot().listAnimations().map(c=>c.getName()),webClips:b.getRoot().listAnimations().map(c=>c.getName())};
+fs.writeFileSync('evidence/model-preservation.json',JSON.stringify(report,null,2));console.log(report);
+if(!report.nodeTransformsAndHierarchyUnchanged||report.sourceHash!==report.downloadsOriginalHash||report.originalTriangles!==report.webTriangles)process.exitCode=1;

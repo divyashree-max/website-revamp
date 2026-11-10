@@ -1,0 +1,6 @@
+<!doctype html><html><head><title>Bicycle motion study</title><style>body{margin:0;background:#171717;color:#eee}canvas{display:block}video{display:none}</style></head><body><script type="module">
+const v=document.createElement('video');v.muted=true;v.preload='auto';document.body.append(v);const ready=new Promise((r,j)=>{v.onloadedmetadata=r;v.onerror=j});v.src='/evidence/reference/bicycle.mp4';await ready;
+const c=document.createElement('canvas');c.width=1600;c.height=1120;document.body.append(c);const ctx=c.getContext('2d');
+for(let i=0;i<16;i++){const seek=new Promise(r=>v.onseeked=r);v.currentTime=v.duration*(.025+i*.062);await seek;const x=i%4*400,y=Math.floor(i/4)*280;const width=240*v.videoWidth/v.videoHeight;ctx.drawImage(v,x+(400-width)/2,y,width,240);ctx.fillStyle='white';ctx.font='13px sans-serif';ctx.fillText(v.currentTime.toFixed(1)+'s',x+10,y+260)}
+window.studyReady=true;
+</script></body></html>

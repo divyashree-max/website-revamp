@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#080809"><meta name="description" content="Craftech360 — an interactive introduction.">
+  <title>Craftech360</title>
+  <link rel="icon" href="/public/assets/craftech360-logo.png" type="image/png">
+  <link rel="preload" href="/public/assets/PolySans-Neutral.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="/src/style.css">
+  <script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/","gsap":"/node_modules/gsap/index.js"}}</script>
+</head>
+<body>
+ <main id="experience" aria-label="Craftech360 interactive introduction" data-state="loading">
+   <h1 class="sr-only">Craftech360</h1>
+   <div id="shell"><span aria-hidden="true">PREPARING THE EXPERIENCE</span></div>
+   <canvas id="scene" aria-hidden="true"></canvas>
+   <div id="fallback" hidden><img src="/public/assets/craftech360-logo.png" alt="" width="600" height="263"><span class="fallback-name" hidden aria-hidden="true">Craftech360</span><svg viewBox="0 0 1440 400" preserveAspectRatio="none" aria-hidden="true"><path d="M0 290L450 250L850 280L1440 220M0 390L1440 340" stroke="#994f2a" stroke-width=".7" fill="none"/></svg></div>
+   <div class="controls"><button id="skip" type="button">Skip intro <span aria-hidden="true">↗</span></button><button id="replay" type="button" hidden><span aria-hidden="true">↻</span> Replay intro</button><button id="pause" type="button" aria-pressed="false" hidden><span aria-hidden="true">Ⅱ</span> <span class="pause-label">Pause motion</span></button></div>
+   <div id="status" class="sr-only" role="status" aria-live="polite">Preparing the experience</div>
+   <div id="loading-note" aria-hidden="true">PREPARING THE EXPERIENCE</div>
+   <div class="hero-note" aria-hidden="true" hidden>MOVE TO EXPLORE <span>+</span></div>
+ </main>
+ <noscript><style>#shell,#scene,.controls,#loading-note{display:none}#fallback[hidden]{display:flex}</style><p class="noscript">Craftech360. Enable JavaScript for the interactive experience.</p></noscript>
+ <script type="module" src="/src/main.js"></script>
+</body></html>
+

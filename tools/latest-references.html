@@ -1,0 +1,11 @@
+<!doctype html><html><head><title>Correction motion references</title><style>body{margin:0;background:#151515;color:white;font:14px sans-serif}canvas{display:block}video{display:none}</style></head><body><script type="module">
+const sources=['/evidence/reference/latest-site.mp4','/evidence/reference/robot-arm.mp4','/evidence/reference/screen-motion.mp4','/evidence/reference/bicycle.mp4'];
+for(const [i,src] of sources.entries()){
+ const heading=document.createElement('h2');heading.textContent=['Current website recording','TAGG9328 — arm','TAGG9330 — screen','Bicycle motion'][i];document.body.append(heading);
+ const video=document.createElement('video');video.muted=true;document.body.append(video);const ready=new Promise((r,j)=>{video.onloadedmetadata=r;video.onerror=j});video.src=src;await ready;
+ const canvas=document.createElement('canvas');canvas.width=1440;canvas.height=540;document.body.append(canvas);const ctx=canvas.getContext('2d');
+ for(let n=0;n<8;n++){const seek=new Promise(r=>video.onseeked=r);video.currentTime=video.duration*(.035+n*.132);await seek;const x=n%4*360,y=Math.floor(n/4)*270,w=240*video.videoWidth/video.videoHeight;ctx.drawImage(video,x+(360-w)/2,y,w,240);ctx.fillStyle='white';ctx.fillText(video.currentTime.toFixed(2)+'s',x+10,y+260)}
+}
+window.referencesReady=true;
+</script></body></html>
+
