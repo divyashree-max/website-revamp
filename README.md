@@ -1,3 +1,9 @@
+> Latest correction: closed glass facets, foreground C, continuous 3D motion, local triangle hover and an advected fluid sheet replace the earlier material/wake. See [C-CORRECTIONS.md](C-CORRECTIONS.md) for current behavior and verification; earlier implementation notes below are historical.
+
+> New section: the supplied crystalline C now follows the home. See [CRYSTAL-SECTION.md](CRYSTAL-SECTION.md) for geometry, shared UI, motion, shader implementation and verification.
+
+> Latest update: the supplied tunnel video replaces the LED logo after solid reconstruction and continues into the Frame 62 landing layout. See [VIDEO-ARRIVAL.md](VIDEO-ARRIVAL.md) for implementation, pending navigation and verification. Earlier notes below describe the previous approved base.
+
 # Craftech360 — direct particle reconstruction
 
 The existing homepage follows a 22.45-second introduction using the supplied KUKA GLB, logo and amber studio. The approved mechanical-detail opening and centred clockwise screen roll are preserved. Runtime contains no technical line-drawing or wireframe stage.
@@ -39,3 +45,9 @@ Homepage logo/fonts preload. Late readiness holds the aligned screen, Skip waits
 npm run build and all 15 browser checks pass. Full visual playback: evidence/direct-sequence.webm and direct-playback-1/2/3.png. Source fingerprints and homepage comparison are recorded separately. No deployment.
 
 The dense GLB remains 33.2MB. Real mobile/assistive hardware and factory-calibrated mechanical simulation are outside local headless-browser validation.
+
+## Current website and deployment
+
+The site now includes the approved robot/video introduction, crystalline C interaction, six-service robotic presentation, and DNA, Orbit, Matrix and Helix product chapters. DNA and Orbit have their own kinetic motion and shared LED video mapping. See the corresponding section Markdown files for implementation and actual verification notes.
+
+GitHub Actions builds and deploys main to GitHub Pages at https://divyashree-max.github.io/website-revamp/. Relative production asset paths support the repository subdirectory. Local server logs, captured evidence and large unoptimized media masters remain local; optimized runtime assets are included in public/assets. The original supplied KUKA model remains in source-assets.

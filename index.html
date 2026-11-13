@@ -1,26 +1,36 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#080809"><meta name="description" content="Craftech360 — an interactive introduction.">
-  <title>Craftech360</title>
-  <link rel="icon" href="/public/assets/craftech360-logo.png" type="image/png">
-  <link rel="preload" href="/public/assets/PolySans-Neutral.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="stylesheet" href="/src/style.css">
-  <script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/","gsap":"/node_modules/gsap/index.js"}}</script>
-</head>
-<body>
- <main id="experience" aria-label="Craftech360 interactive introduction" data-state="loading">
-   <h1 class="sr-only">Craftech360</h1>
-   <div id="shell"><span aria-hidden="true">PREPARING THE EXPERIENCE</span></div>
-   <canvas id="scene" aria-hidden="true"></canvas>
-   <div id="fallback" hidden><img src="/public/assets/craftech360-logo.png" alt="" width="600" height="263"><span class="fallback-name" hidden aria-hidden="true">Craftech360</span><svg viewBox="0 0 1440 400" preserveAspectRatio="none" aria-hidden="true"><path d="M0 290L450 250L850 280L1440 220M0 390L1440 340" stroke="#994f2a" stroke-width=".7" fill="none"/></svg></div>
-   <div class="controls"><button id="skip" type="button">Skip intro <span aria-hidden="true">↗</span></button><button id="replay" type="button" hidden><span aria-hidden="true">↻</span> Replay intro</button><button id="pause" type="button" aria-pressed="false" hidden><span aria-hidden="true">Ⅱ</span> <span class="pause-label">Pause motion</span></button></div>
-   <div id="status" class="sr-only" role="status" aria-live="polite">Preparing the experience</div>
-   <div id="loading-note" aria-hidden="true">PREPARING THE EXPERIENCE</div>
-   <div class="hero-note" aria-hidden="true" hidden>MOVE TO EXPLORE <span>+</span></div>
- </main>
- <noscript><style>#shell,#scene,.controls,#loading-note{display:none}#fallback[hidden]{display:flex}</style><p class="noscript">Craftech360. Enable JavaScript for the interactive experience.</p></noscript>
- <script type="module" src="/src/main.js"></script>
-</body></html>
+﻿<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#080809"><title>Craftech360</title><link rel="icon" href="/public/assets/craftech360-logo.png"><link rel="stylesheet" href="/src/style.css"><script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/","gsap":"/node_modules/gsap/index.js"}}</script></head>
+<body><main id="experience" aria-label="Craftech360" data-state="loading">
+<h1 class="sr-only">Craftech360</h1>
+<video id="tunnel-video" src="/public/assets/tunnel.mp4" poster="/public/assets/tunnel-poster.jpg" muted playsinline loop preload="auto" aria-hidden="true" tabindex="-1"></video>
+<canvas id="scene" aria-hidden="true"></canvas><div id="shell">PREPARING THE EXPERIENCE</div>
+<button id="showreel-trigger" type="button" data-cursor="showreel" aria-label="Play showreel"><span>Play Showreel</span></button>
+<div class="intro-controls"><button id="skip">Skip intro ↗</button></div>
+<div id="status" class="sr-only" role="status" aria-live="polite">Preparing the experience</div><div id="loading-note" aria-hidden="true">PREPARING THE EXPERIENCE</div>
+</main>
+<div id="studio-sequence" hidden>
 
+<div id="studio-visuals">
+<canvas id="crystal-fluid-canvas" aria-hidden="true"></canvas>
+<img class="crystal-fallback" src="/public/assets/crystal-fallback.svg" alt="" aria-hidden="true">
+<img id="services-floor" src="/public/assets/services-grid.svg" alt="" aria-hidden="true">
+<canvas id="crystal-canvas" aria-hidden="true"></canvas>
+<h2 id="crystal-heading" aria-label="WHERE CREATIVITY MEETS ENGINEERING"><span class="crystal-left"><span class="crystal-word">WHERE</span><span class="crystal-word">CREATIVITY</span></span><span class="crystal-right"><span class="crystal-word">MEETS</span><span class="crystal-word">ENGINEERING</span></span></h2>
+<button class="crystal-replay" type="button" disabled aria-label="Replay crystalline C animation">↻ Replay C</button>
+</div>
+<section id="crystal-section" aria-labelledby="crystal-heading">
+
+
+<p class="crystal-status sr-only" role="status">Crystalline C. Scroll freely while the facets rotate, separate and reassemble.</p>
+</section>
+<section id="services-section" aria-label="Our services"><div class="services-pin" id="service-chapters"></div><p class="service-status sr-only" role="status"></p></section>
+<section id="products-section" aria-label="Kinetic products"><div class="products-pin"></div><p class="products-status sr-only" role="status"></p></section>
+</div>
+<div id="landing" hidden inert>
+
+<header><img class="brand" src="/public/assets/craftech360-logo.png" alt="Craftech360"><button class="demo" data-cursor="demo" data-pending="Demo booking"><span>BOOK A DEMO</span></button></header>
+<nav aria-label="Main navigation"><button id="replay" data-cursor="intro">INTRO</button><button data-cursor="projects" data-pending="Projects"><span>PROJECTS</span></button><button data-cursor="products" data-products-link><span>PRODUCTS</span></button><button data-cursor="contact" data-pending="Contact"><span>CONTACT US</span></button></nav>
+<button class="explore" data-cursor="scroll"><span class="arrow" aria-hidden="true">⌄</span><span>Scroll To Explore</span></button>
+<button id="pause" aria-label="Pause background video" aria-pressed="false">Ⅱ <span class="pause-label">Pause video</span></button>
+<p id="pending-message" role="status" hidden></p></div>
+<script type="module" src="/src/main.js"></script></body></html>

@@ -1,0 +1,59 @@
+const {test,expect}=require('@playwright/test');
+const diag=p=>p.evaluate(()=>window.crystalDiagnostics());
+async function landing(p){await p.goto('/?debug=1');await p.waitForFunction(()=>window.craftechDiagnostics?.().rigAnimation);if(!(await p.evaluate(()=>craftechDiagnostics().hero)))await p.locator('#skip').click();await expect(p.locator('#landing')).toBeVisible()}
+async function section(p){await landing(p);await p.locator('.explore').click();await p.waitForFunction(()=>window.crystalDiagnostics?.().ready&&crystalDiagnostics().visible&&(crystalDiagnostics().started||crystalDiagnostics().reduced))}
+test('source geometry, rigid facet pairs and exact reconstruction over the complete timeline',async({page})=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});await section(page);const samples=[];
+ for(let i=0;i<15;i++){samples.push(await diag(page));await page.waitForTimeout(850)}
+ expect(samples.some(s=>s.restError>.5)).toBeTruthy();expect(samples.every(s=>s.rigidPairs)).toBeTruthy();const end=await diag(page);expect(end.finished).toBeTruthy();expect(end.restError).toBe(0);expect(end.meshCount).toBe(18);expect(end.facetCount).toBe(9);expect(end.triangles).toBe(180);expect(end.openEdges).toBe(0);expect(end.originalOpenEdges).toBe(54);expect(end.repairedBounds).toEqual(end.bounds);expect(end.repairs.every(r=>r.volume>0&&r.boundaries===0)).toBeTruthy();expect(end.transmission).toBeGreaterThan(.9);expect(end.bounds[0][0]).toBeCloseTo(-1.8,5);expect(end.bounds[1][1]).toBeCloseTo(2.13257694,5);expect(errors).toEqual([]);await page.screenshot({path:'evidence/crystal-desktop-final.png'});
+ await page.locator('.crystal-replay').click();await page.waitForTimeout(600);expect((await diag(page)).time).toBeLessThan(2);
+});
+test('one shared UI, unchanged home playback and existing cursor actions',async({page})=>{
+ await section(page);expect(await page.locator('header').count()).toBe(1);expect(await page.locator('nav').count()).toBe(1);expect(await page.locator('.context-cursor').count()).toBe(1);const before=await page.locator('#tunnel-video').evaluate(v=>v.currentTime);await page.waitForTimeout(300);expect(await page.locator('#tunnel-video').evaluate(v=>v.currentTime)).not.toBe(before);await page.locator('.demo').hover();await expect(page.locator('.context-cursor')).toHaveAttribute('data-context','demo');await page.locator('.demo').click();await expect(page.locator('dialog')).not.toBeVisible();await expect(page.locator('#pending-message')).toHaveText('Demo booking is pending implementation.');
+ await page.locator('#replay').click();await expect(page.locator('#landing')).toBeHidden();await expect(page.locator('#crystal-section')).toBeHidden();expect(await page.evaluate(()=>scrollY)).toBe(0);expect(await page.evaluate(()=>craftechDiagnostics().hero)).toBeFalsy();await page.locator('#skip').click();await page.locator('.explore').click();await page.waitForFunction(()=>crystalDiagnostics().visible);expect((await diag(page)).rigidPairs).toBeTruthy();
+});
+test('spatial fluid wake dissipates and expensive rendering stops offscreen and hidden',async({page})=>{
+ await section(page);for(let i=0;i<15;i++)await page.mouse.move(200+i*20,410+Math.sin(i*.6)*30,{steps:2});expect((await diag(page)).fluidEnergy).toBeGreaterThan(.2);await page.screenshot({path:'evidence/crystal-wake-final.png'});await page.waitForTimeout(2200);expect((await diag(page)).fluidEnergy).toBeLessThan(.01);
+ await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'))});const h=await diag(page);await page.waitForTimeout(200);expect((await diag(page)).frames).toBe(h.frames);expect((await diag(page)).time).toBe(h.time);await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>false});document.dispatchEvent(new Event('visibilitychange'))});await page.locator('.explore').click();await page.waitForTimeout(800);const off=await diag(page);await page.waitForTimeout(200);expect((await diag(page)).frames).toBe(off.frames);
+});
+test('desktop/tablet/mobile layout and reduced motion remain readable and scrollable',async({page})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});await section(page);for(const viewport of [{width:1500,height:724},{width:768,height:1024},{width:390,height:844},{width:320,height:760}]){await page.setViewportSize(viewport);await page.locator('#crystal-section').scrollIntoViewIfNeeded();await page.waitForTimeout(150);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();const boxes=await page.locator('.crystal-left,.crystal-right').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return {x:r.x,right:r.right}}));for(const b of boxes){expect(b.x).toBeGreaterThanOrEqual(0);expect(b.right).toBeLessThanOrEqual(viewport.width)}await page.screenshot({path:`evidence/crystal-layout-${viewport.width}.png`})}expect((await diag(page)).restError).toBe(0);expect((await diag(page)).fluidEnergy).toBe(0);await expect(page.locator('.crystal-replay')).toBeDisabled();await page.locator('.demo').focus();await expect(page.locator('.demo')).toBeFocused();await page.keyboard.press('Enter');await expect(page.locator('#pending-message')).toBeVisible();
+});
+test('touch disables fluid/cursor while static fallback remains useful after model failure',async({browser})=>{
+ const ctx=await browser.newContext({hasTouch:true,isMobile:true,viewport:{width:390,height:844},reducedMotion:'reduce'}),p=await ctx.newPage();await section(p);await p.touchscreen.tap(200,400);expect((await diag(p)).fluidEnergy).toBe(0);await expect(p.locator('.context-cursor')).not.toBeVisible();await ctx.close();const other=await browser.newContext(),q=await other.newPage();await q.route('**/crystal-c.glb',r=>r.abort());await landing(q);await q.locator('.explore').click();await expect(q.locator('#crystal-section')).toHaveAttribute('data-failed','');await expect(q.locator('.crystal-fallback')).toBeVisible();await expect(q.locator('#crystal-heading')).toBeVisible();await expect(q.locator('.demo')).toBeVisible();await other.close();
+});
+test('foreground glass and exact headline remain correctly layered and readable',async({page})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});await section(page);await expect(page.locator('.crystal-word')).toHaveText(['WHERE','CREATIVITY','MEETS','ENGINEERING']);await expect(page.locator('#crystal-heading')).toHaveAttribute('aria-label','WHERE CREATIVITY MEETS ENGINEERING');const z=await page.evaluate(()=>['#crystal-fluid-canvas','#crystal-heading','#crystal-canvas'].map(s=>Number(getComputedStyle(document.querySelector(s)).zIndex)));expect(z[0]).toBeLessThan(z[1]);expect(z[1]).toBeLessThan(z[2]);expect(await page.locator('#crystal-canvas').evaluate(e=>[e.width,e.height])).toEqual((await diag(page)).buffer);expect(await page.locator('header').count()).toBe(1);
+});
+test('assembled proxy picks local facets stably, transfers the response, and resets precisely',async({page})=>{
+ await section(page);await page.waitForFunction(()=>crystalDiagnostics().finished);const rect=await page.locator('#crystal-canvas').boundingBox();async function hover(index){const s=await diag(page),p=s.facets[index].screen;await page.mouse.move(rect.x+(p[0]+1)*rect.width/2,rect.y+(1-p[1])*rect.height/2);await page.waitForTimeout(350)}
+ await hover(0);let s=await diag(page);expect(s.hovered).toBe(0);expect(s.hoverWeights[0]).toBeGreaterThan(.85);expect(s.hoverWeights[8]).toBe(0);expect(s.hoverWeights.filter((v,i)=>i!==0&&v>0).every(v=>v<.3)).toBeTruthy();expect(s.rigidPairs).toBeTruthy();await page.waitForTimeout(250);expect((await diag(page)).hovered).toBe(0);await hover(8);s=await diag(page);expect(s.hovered).toBe(8);expect(s.hoverWeights[8]).toBeGreaterThan(.85);await page.mouse.move(20,180);await page.waitForTimeout(2200);s=await diag(page);expect(s.hovered).toBe(-1);expect(s.restError).toBe(0);expect(s.hoverWeights.every(v=>v===0)).toBeTruthy();
+});
+
+test('re-entry hysteresis replays from above and below, including interrupted visits',async({page})=>{
+ await section(page);await page.waitForTimeout(1200);let d=await diag(page);const first=d.replays;expect(first).toBe(1);
+ // Reverse near the entry threshold without exiting: keep the same running timeline.
+ const top=await page.locator('#crystal-section').evaluate(e=>e.getBoundingClientRect().top+scrollY);
+ for(const fraction of [.48,.55,.44,.6]){await page.evaluate(({top,fraction})=>scrollTo({top:top-innerHeight*(1-fraction),behavior:'instant'}),{top,fraction});await page.waitForTimeout(120)}
+ expect((await diag(page)).replays).toBe(first);expect((await diag(page)).time).toBeGreaterThan(d.time);
+ await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));await page.waitForFunction(()=>crystalDiagnostics().entryGate.armed);d=await diag(page);expect(d.time).toBe(0);expect(d.restError).toBe(0);expect(d.hoverWeights.every(v=>v===0)).toBeTruthy();
+ await page.locator('#crystal-section').evaluate(e=>e.scrollIntoView({behavior:'instant'}));await page.waitForFunction(()=>crystalDiagnostics().replays===2);expect((await diag(page)).time).toBeLessThan(1);
+ // The real services stage now owns the assembled C while it is in the display.
+ await page.waitForTimeout(800);await page.locator('#services-section').evaluate(e=>e.scrollIntoView({behavior:'instant'}));await page.waitForFunction(()=>crystalDiagnostics().entryGate.armed);expect((await diag(page)).time).toBe(11.4);expect((await diag(page)).restError).toBe(0);
+ await page.locator('#crystal-section').evaluate(e=>e.scrollIntoView({behavior:'instant'}));await page.waitForFunction(()=>crystalDiagnostics().replays===3);await page.waitForTimeout(400);d=await diag(page);expect(d.time).toBeGreaterThan(0);expect(d.time).toBeLessThan(1);expect(d.timelineCount).toBe(1);expect(d.rigidPairs).toBeTruthy();
+ await page.setViewportSize({width:1300,height:800});await page.waitForTimeout(300);expect((await diag(page)).replays).toBe(3);
+ await page.waitForFunction(()=>crystalDiagnostics().finished);expect((await diag(page)).restError).toBe(0);
+ await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));await page.waitForFunction(()=>crystalDiagnostics().entryGate.armed);
+ await page.locator('#crystal-section').evaluate(e=>e.scrollIntoView({behavior:'instant'}));await page.waitForFunction(()=>crystalDiagnostics().replays===4);expect((await diag(page)).time).toBeLessThan(1);
+});
+
+test('visible shared UI contains no development pending tags',async({page})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});await section(page);await expect(page.locator('.demo')).toHaveText('BOOK A DEMO');await expect(page.locator('nav button')).toHaveText(['INTRO','PROJECTS','PRODUCTS','CONTACT US']);await expect(page.locator('.pending-tag,nav small')).toHaveCount(0);
+});
+
+test('tall mobile section uses viewport-normalized entry and reduced motion never replays',async({browser})=>{
+ const ctx=await browser.newContext({hasTouch:true,isMobile:true,viewport:{width:390,height:620}}),p=await ctx.newPage();await section(p);expect((await diag(p)).replays).toBe(1);
+ await p.evaluate(()=>scrollTo({top:0,behavior:'instant'}));await p.waitForFunction(()=>crystalDiagnostics().entryGate.armed);
+ await p.locator('#crystal-section').evaluate(e=>e.scrollIntoView({behavior:'instant'}));await p.waitForFunction(()=>crystalDiagnostics().replays===2);
+ await p.emulateMedia({reducedMotion:'reduce'});await p.evaluate(()=>scrollTo({top:0,behavior:'instant'}));await p.waitForFunction(()=>crystalDiagnostics().entryGate.armed);await p.locator('#crystal-section').evaluate(e=>e.scrollIntoView({behavior:'instant'}));await p.waitForTimeout(250);const d=await diag(p);expect(d.replays).toBe(2);expect(d.time).toBe(11.4);expect(d.restError).toBe(0);expect(d.fluidEnergy).toBe(0);await ctx.close();
+});

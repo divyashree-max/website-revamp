@@ -8,3 +8,6 @@ evidence/
 evidence/video/
 evidence/test-results/
 test-results/
+assets-originals/
+server-output.log
+server-error.log

@@ -8,7 +8,7 @@ const referenceFiles = [
   'C:/Users/CFT 02/Downloads/installtion.mp4', refs+'TAGG9212.MP4', refs+'TAGG9330.MP4', refs+'TAGG9333.MP4', refs+'TAGG9328.MP4',
 ];
 referenceFiles.push(refs+'From Klickpin.com- Discover Cozy fall outfit ideas for a polished look people will notice with enough variety to inspire your next creative step-p.mp4');
-const mime = {'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.jpeg':'image/jpeg','.ttf':'font/ttf','.mp4':'video/mp4','.json':'application/json'};
+const mime = {'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.jpg':'image/jpeg','.glb':'model/gltf-binary','.png':'image/png','.jpeg':'image/jpeg','.ttf':'font/ttf','.mp4':'video/mp4','.json':'application/json'};
 http.createServer((req,res)=>{
  let name; try{name=decodeURIComponent(new URL(req.url,'http://localhost').pathname)}catch{res.writeHead(400).end();return;}
  let file;

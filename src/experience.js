@@ -15,7 +15,7 @@ function disposeScenes(scenes){
  geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>{if(t.source?.data)images.add(t.source.data);t.dispose()});images.forEach(i=>i.close?.());
 }
 
-export async function createExperience(canvas,{reduced,onState,onComplete,onFailure,signal}){
+export async function createExperience(canvas,{reduced,onState,onComplete,onFailure,signal,media}){
  const timing=CONFIG.timing;
  const low=innerWidth<650||navigator.hardwareConcurrency<=4,params=new URLSearchParams(location.search);
  const renderer=new T.WebGLRenderer({canvas,antialias:!low,powerPreference:'high-performance'});
@@ -40,22 +40,23 @@ export async function createExperience(canvas,{reduced,onState,onComplete,onFail
   motion.apply(STAGES.dissolve);
   cloud=await createReconstruction(low?CONFIG.particles.mobile:CONFIG.particles.desktop,signal);scene.add(cloud.group);
   motion.apply(STAGES.dissolve);if(model.screen.center.distanceTo(new T.Vector3().fromArray(cloud.metadata.screenCenter))>.0001)throw new Error('Reconstruction pose needs regeneration');motion.apply(0);
-  content=createContent(logo);rt=new T.WebGLRenderTarget(low?1024:1536,low?1024:1536,{depthBuffer:false,stencilBuffer:false});rt.texture.colorSpace=T.SRGBColorSpace;rt.samples=low?0:2;
+  content=createContent(logo,media);await content.ready;rt=new T.WebGLRenderTarget(low?1024:1536,low?1024:1536,{depthBuffer:false,stencilBuffer:false});rt.texture.colorSpace=T.SRGBColorSpace;rt.samples=low?0:2;
   if(homeError)throw homeError;if(signal.aborted)throw new DOMException('Aborted','AbortError');
- }catch(error){disposed=true;clearTimeout(homeDeadline);motion?.dispose();disposeScenes([scene,content?.scene]);logo?.dispose();rt?.dispose();env.dispose();renderer.dispose();throw error;}
+ }catch(error){disposed=true;clearTimeout(homeDeadline);motion?.dispose();content?.dispose();disposeScenes([scene,content?.scene]);logo?.dispose();rt?.dispose();env.dispose();renderer.dispose();throw error;}
  const display=model.setDisplay(rt.texture),world=environment(scene,low),path=createCameraPath(model,camera,motion,params.get('camera')==='locked');
  // Use the same composited LED texture for the homepage too, including its color/alpha treatment.
  const homepage=new T.Scene(),homepageCamera=new T.OrthographicCamera(-4.5,4.5,4.5,-4.5,.1,30);homepageCamera.position.z=10;
  homepage.add(new T.Mesh(new T.PlaneGeometry(9,9),new T.MeshBasicMaterial({map:rt.texture,toneMapped:false})));
  function draw(dt){
-  if(disposed)return;if(!paused){phase+=dt;pointer.lerp(target,1-Math.exp(-dt*4));}
-  content.identity.visible=homeReady;content.update(phase,reduceMotion?zero:pointer);
-  content.square();renderer.setRenderTarget(rt);renderer.render(content.scene,content.camera);renderer.setRenderTarget(null);
-  if(hero){renderer.render(homepage,homepageCamera);return;}
+  if(disposed||hero)return;if(!paused){phase+=dt;pointer.lerp(target,1-Math.exp(-dt*4));}
   if(waiting&&!homeReady)state.motionTime=STAGES.enterScreen;
   motion.apply(state.motionTime);path.apply(state.motionTime);
+  const screenHeight=model.screen.height/(2*camera.position.distanceTo(model.screen.center)*Math.tan(T.MathUtils.degToRad(camera.fov/2)));
+  content.update(state.motionTime,aspect,screenHeight);
+  content.square();renderer.setRenderTarget(rt);renderer.render(content.scene,content.camera);renderer.setRenderTarget(null);
+  if(hero){renderer.render(homepage,homepageCamera);return;}
   const d=T.MathUtils.smoothstep(state.motionTime,STAGES.dissolve,STAGES.swarm)*(1-T.MathUtils.smoothstep(state.motionTime,STAGES.solidRestore,STAGES.frontalSettle));
-  model.screenIllumination.value=1-T.MathUtils.smoothstep(state.motionTime,timing.enterScreen,timing.hero-.1);
+  model.screenIllumination.value=state.motionTime>=timing.swarm?0:1;
   model.dissolve.value=d;model.root.visible=d<.99999;world.contact.material.opacity=1-d;
   const inlayFade=1-T.MathUtils.smoothstep(state.motionTime,timing.dissolve,timing.dissolve+.5)*(1-T.MathUtils.smoothstep(state.motionTime,timing.frontalSettle-.6,timing.frontalSettle));world.lines.visible=inlayFade>.001;for(const line of world.lines.children)line.material.opacity=.6*inlayFade;
   cloud.update(state.motionTime,dpr);display.color.setScalar(1);renderer.render(scene,camera);
@@ -68,19 +69,19 @@ export async function createExperience(canvas,{reduced,onState,onComplete,onFail
   if(preference.matches!==reduceMotion)setReducedMotion(preference.matches);
   const raw=Math.max(0,now-last);last=now;if(raw>0&&raw<500){frameSamples.push(raw);if(frameSamples.length>180)frameSamples.shift();}
   if(dpr>1&&frameSamples.length===120&&frameSamples.reduce((s,v)=>s+v,0)/120>27){dpr=1;renderer.setPixelRatio(dpr);resize();}
-  draw(Math.min(raw/1000,.05));if(!document.hidden&&!paused)frame=requestAnimationFrame(loop);else frame=0;
+  draw(Math.min(raw/1000,.05));if(!hero&&!document.hidden&&!paused)frame=requestAnimationFrame(loop);else frame=0;
  }
- function wake(){if(!frame&&!disposed&&!document.hidden){last=performance.now();frame=requestAnimationFrame(loop)}}
+ function wake(){if(!hero&&!frame&&!disposed&&!document.hidden){last=performance.now();frame=requestAnimationFrame(loop)}}
  function finishHero(){
   if(!homeReady){skipRequested=true;waiting=true;timeline.pause();state.motionTime=STAGES.enterScreen;draw(0);return;}
-  hero=true;waiting=false;holdPose=true;timeline.pause().time(STAGES.hero,true);state.motionTime=STAGES.hero;motion.apply(STAGES.hero);path.apply(STAGES.hero);model.dissolve.value=0;model.root.visible=true;
+  media.start();hero=true;waiting=false;holdPose=true;timeline.pause().time(STAGES.hero,true);state.motionTime=STAGES.hero;motion.apply(STAGES.hero);path.apply(STAGES.hero);model.dissolve.value=0;model.root.visible=true;
   try{sessionStorage.setItem('craftech360-intro-complete','1')}catch{}
   onComplete();draw(0);wake();
  }
  function skip(){skipRequested=true;if(homeReady)finishHero();else{waiting=true;holdPose=true;timeline.pause();state.motionTime=STAGES.brandHold;onState('waiting');draw(0);wake()}}
  function replay(){if(reduceMotion)return skip();hero=false;waiting=false;skipRequested=false;holdPose=false;paused=false;phase=0;state.motionTime=0;pointer.set(0,0);target.set(0,0);onState('opening');timeline.restart();wake()}
  function pause(value){paused=value||reduceMotion;if(paused)timeline.pause();else if(!hero&&!holdPose&&!waiting)timeline.resume();draw(0);wake()}
- function setReducedMotion(value){reduceMotion=value;paused=value;if(value){pointer.set(0,0);target.set(0,0);skip()}else{if(!hero&&!holdPose&&!waiting)timeline.resume();draw(0);wake()}}
+ function setReducedMotion(value){media.setReduced(value);reduceMotion=value;paused=value;if(value){pointer.set(0,0);target.set(0,0);skip()}else{if(!hero&&!holdPose&&!waiting)timeline.resume();draw(0);wake()}}
  function visibility(){if(document.hidden){timeline.pause();cancelAnimationFrame(frame);frame=0}else{if(!paused&&!hero&&!holdPose&&!waiting)timeline.resume();wake()}}
  function move(event){if(hero&&!paused){target.set(T.MathUtils.clamp((event.clientX/innerWidth-.5)*2,-1,1),T.MathUtils.clamp((.5-event.clientY/innerHeight)*2,-1,1));wake()}}
  function leave(event){if(event.pointerType==='mouse')target.set(0,0)}
@@ -90,14 +91,14 @@ export async function createExperience(canvas,{reduced,onState,onComplete,onFail
  const api={skip,replay,pause,setReducedMotion,labels:timeline.labels,setCameraLocked(value){path.setLocked(value);draw(0)},
   seek(value){holdPose=true;skipRequested=false;hero=false;waiting=false;timeline.pause().time(T.MathUtils.clamp(value,0,STAGES.hero),true);state.motionTime=T.MathUtils.clamp(value,0,STAGES.hero);onState(timeline.currentLabel()||'opening');if(value>=STAGES.hero)finishHero();draw(0);wake()},
   play(){holdPose=false;paused=false;if(hero)replay();else{timeline.resume();wake()}},
-  getState(){const direction=camera.getWorldDirection(new T.Vector3());return {hero,paused,waiting,homepageReady:homeReady,phase,pointer:pointer.toArray(),time:state.motionTime,iteration:timeline.iteration(),playbackRate:CONFIG.playbackRate,playbackDuration:timing.total/CONFIG.playbackRate,sourceModel:'KUKA+Display.glb',modelTriangles:model.triangles,meshes:model.meshes.length,boneCount:model.bones.length,rigAnimation:true,sourceClip:motion.sourceClip,proportionsUnchanged:model.bones.every((b,i)=>b.position.toArray().every((v,j)=>v===model.bindTransforms[i].position[j])&&b.scale.toArray().every((v,j)=>v===model.bindTransforms[i].scale[j])),cable:motion.cable,mountCalibration:model.mountCalibration,wristRevolution:motion.revolution,joints:motion.joints(),baseMatrix:model.base.matrixWorld.toArray(),rootPosition:model.root.position.toArray(),rootRotation:model.root.rotation.toArray(),screenWidth:model.screen.width,screenHeight:model.screen.height,screenRatio:model.screen.width/model.screen.height,screenCenter:model.screen.center.toArray(),screenNormal:model.screen.normal.toArray(),screenUp:model.screen.up.toArray(),screenCenterNDC:model.screen.center.clone().project(camera).toArray(),screenFacing:-direction.dot(model.screen.normal),screenLevel:camera.up.dot(model.screen.up),screenCorners:[[-1,-1],[-1,1],[1,-1],[1,1]].map(([x,y])=>model.screen.center.clone().addScaledVector(model.screen.right,x*model.screen.width/2).addScaledVector(model.screen.up,y*model.screen.height/2).project(camera).toArray()),screenBottom:model.screen.center.y-Math.abs(model.screen.right.y*model.screen.width/2)-Math.abs(model.screen.up.y*model.screen.height/2),screenParent:model.face.parent.name,screenLocalMatrix:model.face.parent.matrix.toArray(),particleCount:cloud.count,particles:cloud.diagnostics,solidVisible:model.root.visible,screenIllumination:model.screenIllumination.value,dissolve:model.dissolve.value,floorMatrix:world.floor.matrixWorld.toArray(),camera:camera.position.toArray(),cameraLocked:path.locked,lookDirection:direction.toArray(),dpr,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,meanFrameMs:frameSamples.length?frameSamples.reduce((s,v)=>s+v,0)/frameSamples.length:null}},
-  dispose(){if(disposed)return;disposed=true;clearTimeout(homeDeadline);events.abort();timeline.kill();motion.dispose();cancelAnimationFrame(frame);observer.disconnect();disposeScenes([scene,content.scene,homepage]);rt.dispose();env.dispose();logo.dispose();renderer.dispose()},
+  getState(){const direction=camera.getWorldDirection(new T.Vector3());return {ledContent:content.mode,video:media.diagnostics,hero,paused,waiting,homepageReady:homeReady,phase,pointer:pointer.toArray(),time:state.motionTime,iteration:timeline.iteration(),playbackRate:CONFIG.playbackRate,playbackDuration:timing.total/CONFIG.playbackRate,sourceModel:'KUKA+Display.glb',modelTriangles:model.triangles,meshes:model.meshes.length,boneCount:model.bones.length,rigAnimation:true,sourceClip:motion.sourceClip,proportionsUnchanged:model.bones.every((b,i)=>b.position.toArray().every((v,j)=>v===model.bindTransforms[i].position[j])&&b.scale.toArray().every((v,j)=>v===model.bindTransforms[i].scale[j])),cable:motion.cable,mountCalibration:model.mountCalibration,wristRevolution:motion.revolution,joints:motion.joints(),baseMatrix:model.base.matrixWorld.toArray(),rootPosition:model.root.position.toArray(),rootRotation:model.root.rotation.toArray(),screenWidth:model.screen.width,screenHeight:model.screen.height,screenRatio:model.screen.width/model.screen.height,screenCenter:model.screen.center.toArray(),screenNormal:model.screen.normal.toArray(),screenUp:model.screen.up.toArray(),screenCenterNDC:model.screen.center.clone().project(camera).toArray(),screenFacing:-direction.dot(model.screen.normal),screenLevel:camera.up.dot(model.screen.up),screenCorners:[[-1,-1],[-1,1],[1,-1],[1,1]].map(([x,y])=>model.screen.center.clone().addScaledVector(model.screen.right,x*model.screen.width/2).addScaledVector(model.screen.up,y*model.screen.height/2).project(camera).toArray()),screenBottom:model.screen.center.y-Math.abs(model.screen.right.y*model.screen.width/2)-Math.abs(model.screen.up.y*model.screen.height/2),screenParent:model.face.parent.name,screenLocalMatrix:model.face.parent.matrix.toArray(),particleCount:cloud.count,particles:cloud.diagnostics,solidVisible:model.root.visible,screenIllumination:model.screenIllumination.value,dissolve:model.dissolve.value,floorMatrix:world.floor.matrixWorld.toArray(),camera:camera.position.toArray(),cameraLocked:path.locked,lookDirection:direction.toArray(),dpr,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,meanFrameMs:frameSamples.length?frameSamples.reduce((s,v)=>s+v,0)/frameSamples.length:null}},
+  dispose(){if(disposed)return;disposed=true;clearTimeout(homeDeadline);events.abort();timeline.kill();motion.dispose();content.dispose();cancelAnimationFrame(frame);observer.disconnect();disposeScenes([scene,content.scene,homepage]);rt.dispose();env.dispose();logo.dispose();renderer.dispose()},
  };
  try{resize();await renderer.compileAsync(scene,camera);await renderer.compileAsync(content.scene,content.camera);await renderer.compileAsync(homepage,homepageCamera);draw(0)}catch(error){api.dispose();throw error;}
  if(signal.aborted){api.dispose();return null;}initialized=true;if(homeError){api.dispose();throw homeError;}
  let seen=false;try{seen=sessionStorage.getItem('craftech360-intro-complete')==='1'}catch{}
  if(reduced||(seen&&!params.has('debug')))skip();else{if(!document.hidden)timeline.play();wake()}
- if(!import.meta.env?.PROD&&params.has('debug')){const {createDebug}=await import('./debug.js');createDebug(api,params,events.signal)}
+ if(!import.meta.env?.PROD&&params.has('debug')&&params.get('devtools')==='1'){const {createDebug}=await import('./debug.js');createDebug(api,params,events.signal)}
  return api;
 }
 
