@@ -47,4 +47,6 @@ Start/end frames were visually checked; their change is comparable to normal adj
 
 Evidence in the ignored evidence folder: helix-opening-video.mp4 (closed reveal, immediate opening, full-open endpoint, repeated close/open cycles and media wrap); helix-kinetic-checks.json; helix-numbered-closed/open.png; helix-endpoint-comparison.json; helix-fixed-top-geometry.json; helix-final-loop-checks.json; helix-production.json and responsive screenshots.
 
-Remaining limitations: approximately 0.035mm endpoint export precision difference; reference-led timing rather than actuator calibration; the approved oblique hero camera is retained, so the open display is viewed obliquely rather than reframed front-on.
+Camera refinement: the full-product presentation now looks along the opened display normal (product-local +X, respecting the existing root yaw). Framing fits a swept bound of the closed, opening and fully open poses. The authored close-up shots remain unchanged, including their mobile framing, and blend into the frontal view only during the final pullback. The camera stays fixed while the mechanism cycles. The reduced-motion fallback uses the same frontal closed view.
+
+Remaining limitations: approximately 0.035mm endpoint export precision difference; reference-led timing rather than actuator calibration.
