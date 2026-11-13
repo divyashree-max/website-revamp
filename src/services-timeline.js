@@ -1,6 +1,11 @@
 import {SERVICE_MOTION} from './services-config.js';
 const clamp=n=>Math.max(0,Math.min(1,n));
 export const serviceEase=n=>{n=clamp(n);return n*n*n*(n*(n*6-15)+10)};
+/** The final viewport of the C spacer is exclusively the reversible handoff. */
+export function sampleStudioHandoff(servicesTop,viewport){
+ const transition=clamp((viewport-servicesTop)/viewport);
+ return {transition,stage:transition===0?'c-presentation':transition===1?'services-presentation':'handoff'};
+}
 /** One scroll sample supplies joint interpolation, HTML visibility and LED blending. */
 export function sampleServices(chapter,reduced=false){
  const raw=Math.max(0,Math.min(5,chapter)),from=Math.min(4,Math.floor(raw)),to=from+1;

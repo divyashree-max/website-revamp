@@ -76,6 +76,14 @@ html.has-context-cursor #landing,html.has-context-cursor #landing *,html.has-con
 .service-explore{display:inline-flex;align-items:center;justify-content:center;min-width:182px;min-height:44px;padding:8px 24px;color:var(--ink);background:#08080955;border:1px solid #fffbedb0;border-radius:30px;text-decoration:none;font-size:13px;transition:background .2s,border-color .2s}
 .service-explore:hover{background:#f7a50418;border-color:var(--amber)}
 .service-explore:focus-visible{outline:2px solid var(--ink);outline-offset:6px}
+.header-actions{position:absolute;right:20px;top:19px;display:flex;align-items:center;gap:12px}
+.header-actions .demo,.header-actions .talk{position:static;display:inline-flex;align-items:center;justify-content:center;height:48px;min-height:48px;line-height:1;white-space:nowrap;padding:8px 26px;border-radius:30px}
+.header-actions .demo{font-size:clamp(14px,1.4vw,20px)}
+.header-actions .talk{background:#000;border:2px solid #FFF9E2;color:#FFF9E2;font-size:13px;transition:background .2s,border-color .2s}
+.header-actions .talk:hover{background:linear-gradient(#f7a50418,#f7a50418),#000;border-color:var(--amber)}
+.header-actions .talk:focus-visible{outline:2px solid #FFF9E2;outline-offset:6px}
+@media(max-width:900px){.header-actions{top:82px;right:var(--margin)}header{height:150px}#pending-message{top:140px}}
+@media(max-width:600px){.header-actions{left:50%;right:auto;transform:translateX(-50%);gap:10px}.header-actions .demo,.header-actions .talk{padding:8px 16px}.header-actions .demo{font-size:14px}}
 .service-status:not(.sr-only){position:fixed;right:var(--margin);bottom:110px;max-width:320px;padding:14px;background:#101010ed;border:1px solid #fffbed50;border-radius:8px;font-size:12px;z-index:5}
 .is-services .explore .arrow{padding-bottom:0;padding-top:5px}
 html.has-context-cursor #studio-sequence,html.has-context-cursor #studio-sequence *{cursor:none}
@@ -88,7 +96,7 @@ html.has-context-cursor #studio-sequence,html.has-context-cursor #studio-sequenc
    so the optical stage releases exactly at its containing block's end. */
 #studio-visuals{margin-bottom:0;z-index:0}
 #studio-visuals #crystal-fluid-canvas{position:absolute;inset:0;display:block;width:100%;height:100%;margin:0;z-index:0}
-#crystal-section{margin-top:-100svh;z-index:auto;pointer-events:none}
+#crystal-section{margin-top:-100svh;height:200svh;z-index:auto;pointer-events:none}
 #studio-visuals .crystal-replay{pointer-events:auto}
 .is-services #studio-visuals{mask-image:none}
 @media(max-width:700px){.service-chapter{padding-top:52svh}.is-services #crystal-canvas{mask-image:linear-gradient(#000 0%,#000 53%,transparent 58%)}.is-services nav{bottom:84px;left:7%;right:7%;flex-direction:row;justify-content:space-between;gap:7px}.is-services nav button{font-size:10px;min-height:36px}.service-copy h2{max-width:100%}}
@@ -96,6 +104,7 @@ html.has-context-cursor #studio-sequence,html.has-context-cursor #studio-sequenc
 .service-copy{left:var(--copy-x,55%);top:var(--copy-y,49%);width:var(--copy-width,40%)}
 @media(max-width:900px){#services-section{height:auto}.services-pin{position:relative;height:auto}.service-chapter{position:relative;min-height:95svh;opacity:1;pointer-events:auto;padding:55svh 7% 125px}.service-copy{position:relative;left:auto;top:auto;transform:none;width:100%;max-width:none}.service-copy h2{max-width:100%;font-size:clamp(28px,7.8vw,42px);margin-bottom:16px;line-height:1.03}.service-copy p{font-size:clamp(14px,2.2vw,17px);line-height:1.4;margin-bottom:20px}.is-services #crystal-canvas{mask-image:linear-gradient(#000 0%,#000 53%,transparent 56%)}.is-services nav{bottom:64px;left:7%;right:7%;flex-direction:row;justify-content:space-between;gap:7px}.is-services nav button{font-size:10px;min-height:36px}}
 /* The supplied SVG already contains perspective. Only screen-space anchoring is applied. */
+#services-floor-clip{position:absolute;inset:0;overflow:clip;z-index:1;pointer-events:none}
 #services-floor{position:absolute;width:100%;height:auto;max-width:none;z-index:1;opacity:0;pointer-events:none;transform:none}
 #products-section{position:relative;height:1000svh;z-index:1;background:transparent}
 .products-pin{position:sticky;top:0;height:100svh}

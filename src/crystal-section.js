@@ -8,7 +8,7 @@ export function mountCrystalSection(root,landing,preference,signal){
  let api,loading=false,disposed=false,fraction=0,resizeUntil=0,active=false,pendingReplay=false;
  const stage=mountServicesStage(studio,services,preference,events.signal,state=>{
   api?.setServicesState(state);api?.setVisible(state.visible&&root.dataset.state==='hero');
-  if(pendingReplay&&state.transition<=.08){pendingReplay=false;api?.replay()}
+  if(pendingReplay&&state.transition===0){pendingReplay=false;api?.replay()}
   const value=state.visible&&studio.getBoundingClientRect().top<innerHeight*.58;
   if(active!==value){active=value;document.body.classList.toggle('is-crystal',value);brand.src=value?crystalLogo:homeLogo;document.dispatchEvent(new Event('cursor-reset'))}
   const label=state.transition>.5?'Back to crystalline C':value?'Back to home':'Scroll to explore the crystalline C';explore.setAttribute('aria-label',label);explore.querySelector('.arrow').textContent=value?'⌃':'⌄';

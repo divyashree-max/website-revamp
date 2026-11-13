@@ -10,10 +10,10 @@ test('six synchronized chapters use the source robot with rigid joints and a fro
  await page.locator('.service-explore').first().click();await expect(page.locator('.service-status')).toContainText('destination has not been supplied');expect(errors).toEqual([]);expect((await diag(page)).services.every(s=>s.destination===null)).toBeTruthy();await page.screenshot({path:'evidence/services-desktop-final.png'});
 });
 test('one C travels into the actual display and reverses without resetting the shared fluid',async({page})=>{
- await ready(page);await page.waitForFunction(()=>crystalDiagnostics().finished);const start=await page.locator('#studio-sequence').evaluate(e=>e.getBoundingClientRect().top+scrollY),entry=(await page.evaluate(()=>crystalDiagnostics())).replays;
+ await ready(page);await page.waitForFunction(()=>crystalDiagnostics().finished);const start=await page.locator('#services-section').evaluate(e=>e.getBoundingClientRect().top+scrollY-innerHeight),entry=(await page.evaluate(()=>crystalDiagnostics())).replays;
  async function travel(t){await page.evaluate(({start,t})=>scrollTo({top:start+t*innerHeight,behavior:'instant'}),{start,t});await page.mouse.move(620+t*100,330+t*60,{steps:3});await page.waitForTimeout(70);return diag(page)}
  const a=await travel(.65);expect(a.cScale).toBeLessThan(1);expect(a.cVisible).toBeTruthy();const flow=a.fluid.steps;await travel(.85);await travel(1);const b=await travel(.65);for(let k=0;k<3;k++)expect(b.cPosition[k]).toBeCloseTo(a.cPosition[k],3);expect(b.fluid.steps).toBeGreaterThan(flow);expect(b.fluid.energy).toBeGreaterThan(0);expect((await page.evaluate(()=>crystalDiagnostics())).replays).toBe(entry);
- await travel(.01);await page.waitForTimeout(100);expect((await page.evaluate(()=>crystalDiagnostics())).replays).toBe(entry+1);expect(await page.locator('#crystal-canvas').count()).toBe(1);expect(await page.locator('#crystal-fluid-canvas').count()).toBe(1);
+ await travel(0);await page.waitForTimeout(100);expect((await page.evaluate(()=>crystalDiagnostics())).replays).toBe(entry+1);expect(await page.locator('#crystal-canvas').count()).toBe(1);expect(await page.locator('#crystal-fluid-canvas').count()).toBe(1);
 });
 test('native keyboard scroll, finite sticky release, and hidden-tab lifecycle remain usable',async({page})=>{
  await ready(page);await scroll(page,0);await page.keyboard.press('PageDown');await page.waitForTimeout(350);expect((await diag(page)).chapter).toBeGreaterThan(.5);await scroll(page,5);const before=await diag(page);await page.waitForTimeout(200);expect((await diag(page)).media.time).toBeGreaterThan(before.media.time);
@@ -30,7 +30,7 @@ test('image and video can replace procedural content without changing scroll sta
 
 test('glass becomes amber on approach, holds inside the LED and reverses with the scroll clock',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});await ready(page);await page.waitForFunction(()=>crystalDiagnostics().finished);
- const start=await page.locator('#studio-sequence').evaluate(e=>e.getBoundingClientRect().top+scrollY);
+ const start=await page.locator('#services-section').evaluate(e=>e.getBoundingClientRect().top+scrollY-innerHeight);
  async function at(t){await page.evaluate(({start,t})=>scrollTo({top:start+t*innerHeight,behavior:'instant'}),{start,t});await page.waitForTimeout(80);return diag(page)}
  const original=await at(.25),middle=await at(.6),amber=await at(.82),hold=await at(.92);
  expect(original.cAmber).toBe(0);expect(middle.cAmber).toBeGreaterThan(0);expect(middle.cAmber).toBeLessThan(1);expect(amber.cAmber).toBe(1);expect(hold.cAmber).toBe(1);expect(hold.cAmberHold).toBeTruthy();expect(hold.cVisible).toBeTruthy();expect(hold.glassTransmission).toBe(1);expect(hold.cScale).toBeCloseTo(amber.cScale,6);for(let i=0;i<3;i++)expect(hold.cPosition[i]).toBeCloseTo(amber.cPosition[i],5);
