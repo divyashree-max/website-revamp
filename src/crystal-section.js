@@ -28,7 +28,7 @@ export function mountCrystalSection(root,landing,preference,signal){
  explore.addEventListener('click',()=>{const target=productsStage.state.entry>.5?services:stage.state.transition>.5?section:active?root:section;target.scrollIntoView({behavior:preference.matches?'instant':'smooth',block:'start'})},{signal:events.signal});
  preference.addEventListener('change',()=>{api?.setReduced(preference.matches);stage.schedule()},{signal:events.signal});
  document.querySelector('[data-products-link]').addEventListener('click',()=>productsStage.section.scrollIntoView({behavior:preference.matches?'instant':'smooth',block:'start'}),{signal:events.signal});
- if(new URLSearchParams(location.search).has('debug')){window.dnaQA=(action,value)=>api?.dnaQA(action,value);window.orbitQA=time=>api?.orbitQA(time)}
+ if(new URLSearchParams(location.search).has('debug')){window.dnaQA=(action,value)=>api?.dnaQA(action,value);window.orbitQA=time=>api?.orbitQA(time);window.matrixQA=(action,value)=>api?.matrixQA(action,value)}
  window.productsDiagnostics=()=>({...api?.productsDiagnostics(),...productsStage.state});
  window.crystalDiagnostics=()=>({...api?.diagnostics(),ready:!!api,loading,active,visibility:fraction,entryGate:gate.state,failed:studio.hasAttribute('data-failed')});
  window.servicesDiagnostics=()=>({...api?.servicesDiagnostics(),...stage.state,services:stage.services.map(({id,title,description,destination,media,pose,layout})=>({id,title,description,destination,media,pose,layout}))});
