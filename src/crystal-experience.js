@@ -15,7 +15,7 @@ export async function createCrystalExperience(canvas,section,{signal,reduced}){
  camera.layers.enable(1);
  let lost=false,spreadFactor=1,timeline,hovered=-1,started=false,replays=0;const weights=new Float32Array(9),phase={time:reduced?CRYSTAL.duration:0},pointerMode=matchMedia('(hover: hover) and (pointer: fine)'),ndc=new T.Vector2(10,10);
  let services,serviceMedia,servicesLoading,serviceError=null,serviceState={transition:0,chapter:0,index:0,mobile:innerWidth<=700},viewH=6.6,serviceTime=0,serviceActive=false;
- let products,productsLoading,productsState={entry:0,index:0,local:0,visible:false,mobile:false};const floor=studio.querySelector('#services-floor'),productsSection=studio.querySelector('#products-section');
+ let products,productsLoading,productsState={entry:0,index:0,local:0,visible:false,mobile:false},storiesEntry=0;const floor=studio.querySelector('#services-floor'),productsSection=studio.querySelector('#products-section');
  const destination=new T.Vector3(),screenQ=new T.Quaternion(),startQ=new T.Quaternion(),basis=new T.Matrix4();
  try{model=await loadCrystal(signal,low,backdrop);scene.add(model.root);env=createReflectionEnvironment(renderer);scene.environment=env.texture;scene.environmentIntensity=1;field=createGlassField(renderer,low,studio.querySelector('#crystal-fluid-canvas'))}catch(e){model?.dispose();env?.dispose();backdrop.dispose();renderer.dispose();throw e}
  const key=new T.DirectionalLight(0xf6faff,.5);key.position.set(-3,4,6);scene.add(key);
@@ -54,6 +54,9 @@ export async function createCrystalExperience(canvas,section,{signal,reduced}){
  function draw(dt=0){if(disposed||lost)return;ambient+=reduced?0:dt;
   const entering=productsState.entry,productMode=entering>=.5;
   field.update(dt,!reduced&&pointerMode.matches);renderer.setViewport(0,0,width,height);renderer.setScissorTest(false);renderer.setClearColor(0x000000,0);
+  // Stories owns only its cards. Keep this existing fluid layer alive while
+  // releasing the offscreen product and its video; reverse restores normal draw.
+  if(storiesEntry>=1){products?.deactivate();serviceMedia?.pause();serviceActive=false;model.root.visible=false;canvas.style.opacity='0';floor.style.opacity='0';renderer.clear();frames++;return}
   if(productMode){serviceMedia?.pause();serviceActive=false;model.root.visible=false;if(services)services.setVisible(false);floor.style.opacity='0';const ready=products?.update(productsState,dt);productsSection.toggleAttribute('data-model-ready',!!ready);const edge=productsState.simple?1:Math.max(.5,ease(productsState.local,0,.035)*(productsState.index===3?1:1-ease(productsState.local,.965,1)));canvas.style.opacity=String(ready?ease(entering,.5,1)*edge:0);if(ready){renderer.toneMappingExposure=.75;products.render();renderer.toneMappingExposure=1}else renderer.clear();}
   else{products?.deactivate();if(serviceState.transition>=1)serviceTime+=reduced?0:dt;else serviceTime=0;scene.environmentRotation.set(0,reduced?0:Math.sin(ambient*.16)*.12,0);apply(dt);backdrop.setTextVisibility(1-ease(serviceState.transition,0,.3));backdrop.draw();canvas.style.opacity=String(1-ease(entering,0,.5));renderer.render(scene,camera);
    if(services){const point=services.floorPoint().project(camera);const anchorX=(point.x+1)*width*.5,anchorY=(1-point.y)*height*.5,u=706.96/1439,gridWidth=Math.ceil(Math.max(width+2,(anchorX+1)/u,(width-anchorX+1)/(1-u))),gridHeight=gridWidth*352/1439;floor.style.width=gridWidth+'px';floor.style.top=(anchorY-gridHeight*.3)+'px';floor.style.left=(anchorX-gridWidth*u)+'px';floor.style.opacity=String(.3*ease(serviceState.transition,.3,.7)*(1-ease(entering,0,.5)));}
@@ -81,6 +84,7 @@ export async function createCrystalExperience(canvas,section,{signal,reduced}){
  try{resize();apply();await renderer.compileAsync(scene,camera);draw();section.dataset.ready='';studio.dataset.ready='';replay.disabled=reduced}catch(error){stop();timeline.kill();observer.disconnect();events.abort();field.dispose();model.dispose();env.dispose();backdrop.dispose();renderer.dispose();throw error}
  document.fonts.ready.then(()=>{if(!disposed)resize()});
  return {setVisible,setReduced,replay:replayAnimation,reset,finishC,setServicesState,preloadServices,setProductsState,preloadProducts,
+  setStoriesState(state){storiesEntry=state.entry;if(reduced&&visible)draw();else wake()},
  dnaQA(action,value){products?.dnaQA(action,value);if(reduced&&visible)draw();else wake()},
  orbitQA(time){products?.orbitQA(time);if(reduced&&visible)draw();else wake()},
  matrixQA(action,value){products?.matrixQA(action,value);if(reduced&&visible)draw();else wake()},

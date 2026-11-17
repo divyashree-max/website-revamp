@@ -1,5 +1,5 @@
-﻿<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#080809"><title>Craftech360</title><link rel="icon" href="/public/assets/craftech360-logo.png"><link rel="stylesheet" href="/src/style.css"><script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/","gsap":"/node_modules/gsap/index.js"}}</script></head>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#080809"><title>Craftech360</title><link rel="icon" href="/public/assets/craftech360-logo.png"><link rel="stylesheet" href="/src/style.css"><link rel="stylesheet" href="/src/stories.css"><script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/","gsap":"/node_modules/gsap/index.js"}}</script></head>
 <body><main id="experience" aria-label="Craftech360" data-state="loading">
 <h1 class="sr-only">Craftech360</h1>
 <video id="tunnel-video" src="/public/assets/tunnel.mp4" poster="/public/assets/tunnel-poster.jpg" muted playsinline loop preload="auto" aria-hidden="true" tabindex="-1"></video>
@@ -25,11 +25,12 @@
 </section>
 <section id="services-section" aria-label="Our services"><div class="services-pin" id="service-chapters"></div><p class="service-status sr-only" role="status"></p></section>
 <section id="products-section" aria-label="Kinetic products"><div class="products-pin"></div><p class="products-status sr-only" role="status"></p></section>
+<section id="stories-section" aria-labelledby="stories-heading"><div class="stories-bounds"><div class="stories-pin"><div class="stories-space"><div class="stories-world"><div class="stories-title"><h2 id="stories-heading"><span class="sr-only">Ideas Brought to Life</span><span aria-hidden="true" class="story-heading-mask"><span class="story-heading-line">Ideas Brought</span></span><span aria-hidden="true" class="story-heading-mask"><span class="story-heading-line">to Life</span></span></h2></div><div class="stories-ring"></div></div></div><div class="stories-footer"><div class="stories-controls"></div></div></div></div><p class="stories-status sr-only" role="status"></p></section>
 </div>
 <div id="landing" hidden inert>
 
 <header><img class="brand" src="/public/assets/craftech360-logo.png" alt="Craftech360"><div class="header-actions"><button class="demo" data-cursor="demo" data-pending="Demo booking"><span>BOOK A DEMO</span></button><button class="talk" type="button" data-cursor="contact" data-pending="Contact"><span>LET’S TALK</span></button></div></header>
-<nav aria-label="Main navigation"><button id="replay" data-cursor="intro">INTRO</button><button data-cursor="projects" data-pending="Projects"><span>PROJECTS</span></button><button data-cursor="products" data-products-link><span>PRODUCTS</span></button><button data-cursor="contact" data-pending="Contact"><span>CONTACT US</span></button></nav>
+<nav aria-label="Main navigation"><button id="replay" data-cursor="intro">INTRO</button><button data-cursor="projects" data-stories-link><span>PROJECTS</span></button><button data-cursor="products" data-products-link><span>PRODUCTS</span></button><button data-cursor="contact" data-pending="Contact"><span>CONTACT US</span></button></nav>
 <button class="explore" data-cursor="scroll"><span class="arrow" aria-hidden="true">⌄</span><span>Scroll To Explore</span></button>
 <button id="pause" aria-label="Pause background video" aria-pressed="false">Ⅱ <span class="pause-label">Pause video</span></button>
 <p id="pending-message" role="status" hidden></p></div>

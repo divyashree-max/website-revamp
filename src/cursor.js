@@ -2,6 +2,7 @@
 export const CURSOR_STATES=Object.freeze({
  showreel:'PLAY SHOWREEL',demo:'LET’S BOOK',intro:'REPLAY INTRO',products:'VIEW PRODUCTS',
  projects:'SEE OUR PROJECTS',about:'MEET CRAFTECH360',contact:'CONNECT WITH US',scroll:'SCROLL TO EXPLORE',
+ 'story-infocomm':'PLAY INFOCOMM STORY','story-dell':'PLAY DELL FORUM STORY','story-elecrama':'PLAY ELECRAMA STORY','story-gafx':'PLAY GAFX STORY',
 });
 
 export function createContextCursor(root){

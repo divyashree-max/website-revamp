@@ -1,0 +1,53 @@
+#stories-section{position:relative;height:var(--stories-height,620svh);z-index:3;--stories-tail:5svh}
+.stories-bounds{position:relative;height:calc(100% - var(--stories-tail))}.stories-pin{position:sticky;top:0;height:100svh;overflow:clip}
+/* Rigid perspective planes share one spatial curve. Depth sorting protects text/video compositing. */
+.stories-space{position:absolute;inset:0;pointer-events:none}.stories-world{position:absolute;inset:0;width:100%;height:100%}
+.stories-title{position:absolute;left:50%;top:48%;z-index:100;width:min(80vw,1000px);transform:translate(-50%,-50%);font-family:var(--font-display,var(--font-interface));font-size:clamp(48px,7vw,112px);line-height:.98;letter-spacing:-.045em;text-align:center;font-weight:700;color:var(--ink);pointer-events:none}
+.stories-title h2{font:inherit;line-height:inherit;letter-spacing:inherit;margin:0}.stories-ring{position:absolute;inset:0}
+.story-card{position:absolute;left:50%;top:48%;transform-origin:center;pointer-events:auto}
+.story-front{position:absolute;inset:0;border-radius:4px;overflow:hidden;background:#080809;backface-visibility:hidden}
+.story-film{position:absolute;inset:0}.story-film>img,.story-film>video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}.story-film>video{opacity:0}.story-card[data-decoded] video{opacity:1}
+.story-open{position:absolute;inset:0;z-index:2;border:0;background:transparent;border-radius:4px;padding:0;cursor:pointer}.story-open:focus-visible{outline:2px solid var(--amber);outline-offset:-3px}
+
+.story-static-description,.story-inline-play{display:none}
+.stories-footer{position:absolute;right:var(--margin);bottom:22px;z-index:5}.stories-controls{display:flex;align-items:center;gap:12px;color:var(--ink);font:400 13px/1.2 var(--font-interface)}
+.stories-controls button,.stories-controls summary{min-height:44px;padding:12px 18px;color:var(--ink);background:#080809d9;border:1px solid #fff9e266;border-radius:28px;font:inherit;cursor:pointer}.stories-controls summary{display:flex;align-items:center;list-style:none}.stories-controls summary::-webkit-details-marker{display:none}.stories-controls summary:after{content:'+';margin-left:10px;color:var(--amber)}
+.stories-controls button:hover,.stories-controls summary:hover{background:#fff9e212}.stories-controls :focus-visible{outline:2px solid var(--amber);outline-offset:3px}.stories-project-menu{position:relative}.stories-choices{position:absolute;bottom:calc(100% + 12px);right:0;width:290px;background:#10100fee;border:1px solid #fff9e233;border-radius:6px;padding:8px}.stories-choices button{display:block;width:100%;text-align:left;border:0;border-radius:4px;font-size:14px;line-height:1.3}.stories-choices button[aria-current=true]{color:var(--amber)}
+.is-stories #crystal-canvas,.is-stories #services-floor-clip,.is-stories .crystal-fallback{visibility:hidden!important}.is-stories #pause{visibility:hidden}.is-stories .story-card{will-change:transform}
+.story-player video{max-height:68svh;object-fit:contain;background:#000}.story-player h2{padding-right:60px}.story-sound,.story-play-toggle{margin-top:16px;min-height:44px;padding:10px 20px;border:1px solid #fff9e280;border-radius:28px;background:#080809;color:var(--ink);font:inherit}.story-play-toggle{margin-right:12px}.story-player-status:empty{display:none}
+@media(max-width:900px){.stories-footer{bottom:106px}.stories-title{font-size:clamp(40px,7vw,75px)}}
+@media(max-width:700px){.stories-title{width:88vw;font-size:clamp(34px,9.2vw,55px)}.stories-footer{bottom:100px;right:6%}.stories-controls{gap:8px;font-size:12px}.stories-controls button,.stories-controls summary{padding:10px 14px}.is-stories nav{bottom:55px}.is-stories .explore{bottom:12px;font-size:11px}.is-stories .arrow{width:28px;height:28px;font-size:20px}.story-player{padding:20px}.story-player h2{font-size:20px;padding-right:0}.story-player video{max-height:60svh}}
+
+@media(prefers-reduced-motion:reduce){#stories-section{height:auto!important;padding:170px 7% 155px}.stories-bounds{height:auto}.stories-pin{position:relative;height:auto;overflow:visible}.stories-space{position:relative;inset:auto;pointer-events:auto}.stories-world{position:relative;inset:auto!important;width:auto;height:auto}.stories-title{position:relative;inset:auto!important;width:auto;transform:none!important;opacity:1!important;font-size:clamp(36px,6vw,80px);margin-bottom:60px}.stories-ring{position:relative;inset:auto;display:flex;flex-direction:column;gap:64px}.story-card{position:relative;inset:auto!important;width:min(100%,420px)!important;height:auto!important;transform:none!important;margin:auto;scroll-margin-top:160px;will-change:auto!important}.story-front{position:relative;aspect-ratio:4/5;overflow:hidden}.story-static-description{display:block;font-size:15px;line-height:1.45;margin:20px 0 0}.story-inline-play{display:inline-block;border:1px solid #fff9e26b;background:#080809;color:var(--ink);padding:0 20px;border-radius:30px;min-height:44px;margin-top:20px}.stories-footer{position:relative;inset:auto;margin-top:45px}.stories-controls{justify-content:flex-end}}
+/* One accessible heading; the two visual lines reveal through reversible local-scroll masks. */
+.story-heading-mask{display:block;overflow:clip;padding:.10em 0;margin:-.10em 0}.story-heading-line{display:block;transform:translate3d(0,112%,0);will-change:transform}
+@media(prefers-reduced-motion:reduce){.story-heading-mask{overflow:visible!important}.story-heading-line{transform:none!important;will-change:auto}}
+.story-card{backface-visibility:hidden}.stories-title{text-shadow:0 2px 12px #0007}
+/* Pixel-space native hit regions follow the exact bowed meshes, not their boxes. */
+.stories-surface{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+.stories-ring{z-index:2;pointer-events:none}.stories-ring .story-card{inset:0;width:100%;height:100%;transform:none;pointer-events:none}
+.stories-ring .story-front{overflow:visible;background:transparent;pointer-events:none}
+.stories-ring .story-film{visibility:hidden}.stories-ring .story-open{right:auto;bottom:auto;pointer-events:auto;border-radius:0}
+.stories-footer{z-index:20}.is-stories .story-card{will-change:auto}
+#studio-visuals #crystal-canvas{filter:opacity(var(--stories-handoff,1))}
+#studio-sequence:has(#stories-section) .product-chapter{filter:opacity(var(--stories-handoff,1))}
+/* Reduced motion and WebGL failure use the same complete semantic story list. */
+#stories-section[data-simple]{height:auto!important;padding:170px 7% 155px}
+[data-simple] .stories-bounds{height:auto}[data-simple] .stories-pin{position:relative;height:auto;overflow:visible}
+[data-simple] .stories-space,[data-simple] .stories-world{position:relative;inset:auto!important;width:auto;height:auto;pointer-events:auto}
+[data-simple] .stories-title{position:relative;inset:auto!important;width:auto;transform:none!important;opacity:1!important;font-size:clamp(36px,6vw,80px);margin-bottom:60px}
+[data-simple] .stories-ring{position:relative;inset:auto;display:flex;flex-direction:column;gap:64px}
+[data-simple] .stories-ring .story-card{position:relative;inset:auto!important;width:min(100%,420px)!important;height:auto!important;transform:none!important;margin:auto;scroll-margin-top:160px}
+[data-simple] .story-front{position:relative;aspect-ratio:4/5;overflow:hidden}
+[data-simple] .stories-ring .story-film{visibility:visible}
+[data-simple] .stories-ring .story-open{inset:0!important;width:100%!important;height:100%!important;clip-path:none!important}
+[data-simple] .story-static-description{display:block;font-size:15px;line-height:1.45;margin:20px 0 0}
+[data-simple] .story-inline-play{display:inline-block;border:1px solid #fff9e26b;background:#080809;color:var(--ink);padding:0 20px;border-radius:30px;min-height:44px;margin-top:20px}
+[data-simple] .stories-footer{position:relative;inset:auto;margin-top:45px}
+[data-simple] .story-heading-mask{overflow:visible!important}[data-simple] .story-heading-line{transform:none!important}
+@media(prefers-reduced-motion:reduce){.stories-surface{display:none}}
+/* WebGL paints the caption on the video mesh. Keep its semantic title available. */
+#stories-section:not([data-simple]) .story-caption{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+/* Static/reduced-motion video, gradient and title share this clipped front. */
+[data-simple] .stories-ring .story-front{overflow:hidden}
+[data-simple] .story-caption{position:absolute;inset:auto 0 0;z-index:3;margin:0;padding:42px 6.25% 6.25%;background:linear-gradient(transparent,rgba(0,0,0,.76));font:400 clamp(12px,3.2vw,17px)/1.22 var(--font-interface);color:var(--ink);pointer-events:none}
