@@ -2,11 +2,11 @@ import * as T from 'three';
 import {STORY_COMPOSITION} from './stories-config.js';
 import {surfacePoint} from './stories-orbit.js';
 import {createStoryDeformation} from './stories-deformation.js';
-import {createStoryCaption} from './stories-caption.js';
+import {createStoryCaption,clipStorySurface} from './stories-caption.js';
 
 /** One canvas; independent deformable surfaces, immutable video UVs and path poses. */
 export function createStoriesSurface(host,cards,stories,signal,wake) {
- let renderer,disposed=false,width=0,height=0,layout=null,active=false,projectionDirty=false,lastDraw=0;
+ let renderer,disposed=false,width=0,height=0,layout=null,active=false,projectionDirty=false,lastDraw=0,lastTransitionProgress=null;
  try { renderer=new T.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'}); }
  catch { return null; }
  const canvas=renderer.domElement;canvas.className='stories-surface';canvas.setAttribute('aria-hidden','true');host.prepend(canvas);
@@ -31,13 +31,14 @@ export function createStoriesSurface(host,cards,stories,signal,wake) {
   const video=card.querySelector('video'),film=new T.VideoTexture(video);film.colorSpace=T.SRGBColorSpace;
   const poster=loader.load(stories[i].poster,texture=>{if(disposed){texture.dispose();return}crop(texture,texture.image,i);wake()});poster.colorSpace=T.SRGBColorSpace;
   const material=new T.MeshBasicMaterial({map:poster,alphaMap:mask,alphaTest:.5,toneMapped:false,side:T.FrontSide});
+  const clear={value:0};material.onBeforeCompile=shader=>clipStorySurface(shader,clear);
   const mesh=new T.Mesh(geometry,material);scene.add(mesh);
-  const caption=createStoryCaption(mesh,mask,stories[i].title,fontFamily,ink),open=card.querySelector('.story-open');
+  const caption=createStoryCaption(mesh,mask,stories[i].title,fontFamily,ink,clear),open=card.querySelector('.story-open');
   open.addEventListener('pointerenter',()=>{caption.setHover(true);wake()},{signal});open.addEventListener('pointerleave',()=>{caption.setHover(false);wake()},{signal});
   open.addEventListener('focus',()=>{caption.setFocus(true);wake()},{signal});open.addEventListener('blur',()=>{caption.setFocus(false);wake()},{signal});
   video.addEventListener('loadedmetadata',()=>{crop(film,video,i);wake()},{signal});
   for(const event of ['loadeddata','playing','pause','seeked','error'])video.addEventListener(event,wake,{signal});
-  resources.push({film,poster,material,video,card,geometry,caption,bend:0});return mesh;
+  resources.push({film,poster,material,video,card,geometry,caption,clear,bend:0});return mesh;
  });
  document.fonts.ready.then(()=>{if(!disposed){resources.forEach((r,i)=>r.caption.paint(layout?.cards[i].width||260,true));wake()}});
  const v=new T.Vector3(),direction=new T.Vector3(),euler=new T.Euler(0,0,0,'ZYX');
@@ -55,6 +56,7 @@ export function createStoriesSurface(host,cards,stories,signal,wake) {
    mesh.position.set(pose.x,-pose.y,pose.z);
    if(pose.alignment===1)mesh.quaternion.identity();else{euler.set(-pose.pitch*Math.PI/180,pose.yaw*Math.PI/180,-pose.roll*Math.PI/180,'ZYX');mesh.quaternion.setFromEuler(euler)}mesh.scale.setScalar(pose.width);mesh.updateMatrixWorld();
    const resource=resources[i],map=resource.card.hasAttribute('data-decoded')&&resource.video.readyState>=2?resource.film:resource.poster;
+   resource.clear.value=pose.clear??0;
    resource.caption.paint(pose.width);
    if(resource.material.map!==map){resource.material.map=map;resource.material.needsUpdate=true}
   });
@@ -74,14 +76,16 @@ export function createStoriesSurface(host,cards,stories,signal,wake) {
    const angle=((k+.5)/40-.5)*bend;
    v.set(Math.sin(angle),0,Math.cos(angle)).applyQuaternion(mesh.quaternion);
    if(v.dot(direction)<=0)continue;
-   for(const [s,out,y] of [[k/40,top,0],[(k+1)/40,top,0],[k/40,bottom,1],[(k+1)/40,bottom,1]]){
+   const bottomV=1-(pose.clear??0);
+   for(const [s,out,y] of [[k/40,top,0],[(k+1)/40,top,0],[k/40,bottom,bottomV],[(k+1)/40,bottom,bottomV]]){
     const [x,yy,z]=surfacePoint(s,y,pose.width,pose.height,bend);
     v.set(x,-yy,z).applyQuaternion(mesh.quaternion).add(mesh.position).project(camera);
     // Match the CSS-scaled video without changing the approved camera/path width.
     out.push([(v.x+1)*layout.cssWidth/2,(1-v.y)*layout.cssHeight/2]);
    }
   }
-  const outline=[...top,...bottom.reverse()];pose.hitOutline=outline;
+  let outline=[...top,...bottom.reverse()];
+  pose.hitOutline=outline;
   const left=outline.length?Math.min(...outline.map(p=>p[0])):0,upper=outline.length?Math.min(...outline.map(p=>p[1])):0;
   const right=outline.length?Math.max(...outline.map(p=>p[0])):0,lower=outline.length?Math.max(...outline.map(p=>p[1])):0;
   const button=cards[i].querySelector('.story-open');
@@ -91,15 +95,19 @@ export function createStoriesSurface(host,cards,stories,signal,wake) {
  }
  function draw(now=performance.now()){
   if(!active||!layout||disposed)return;
-  const states=deformation.step(layout,now);
+  // Preserve the approved velocity response in Stories. During convergence a
+  // stationary scroll holds even the surface pose while its video keeps playing.
+  const progress=layout.transition?.progress;
+  const states=progress===undefined||progress!==lastTransitionProgress?deformation.step(layout,now):deformation.states;
+  lastTransitionProgress=progress;
   const dt=lastDraw?Math.min(.05,Math.max(0,(now-lastDraw)/1000)):1/60;lastDraw=now;
-  layout.cards.forEach((pose,i)=>{const bend=states[i].bend*(1-pose.alignment),changed=deform(i,bend);if(projectionDirty||changed)projectHitRegion(pose,i,bend);resources[i].caption.step(i===layout.active?pose.alignment:0,dt,pose.frontVisible)});
+  layout.cards.forEach((pose,i)=>{const bend=states[i].bend*(1-pose.alignment)*(pose.bendWeight??1),changed=deform(i,bend);if(projectionDirty||changed)projectHitRegion(pose,i,bend);resources[i].caption.step(i===layout.active?pose.alignment:0,dt,pose.frontVisible,pose.captionWeight??1)});
   projectionDirty=false;renderer.render(scene,camera);
  }
  function dispose(){if(disposed)return;disposed=true;resources.forEach(r=>{r.caption.dispose();r.film.dispose();r.poster.dispose();r.material.dispose();r.geometry.dispose()});mask.dispose();renderer.dispose();canvas.remove()}
  canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();canvas.hidden=true;host.closest('section').dataset.surfaceFailed='';wake()},{signal});
  canvas.addEventListener('webglcontextrestored',()=>{delete host.closest('section').dataset.surfaceFailed;wake()},{signal});signal.addEventListener('abort',dispose,{once:true});
- const settling=()=>active&&(deformation.settling||resources.some(r=>r.caption.settling));
+ const settling=()=>active&&((!layout?.transition&&deformation.settling)||resources.some(r=>r.caption.settling));
  return {update,draw,dispose,get settling(){return settling()},get diagnostics(){return {
   rendererCount:1,triangles:renderer.info.render.triangles,drawCalls:renderer.info.render.calls,dpr:renderer.getPixelRatio(),settling:settling(),
   cards:resources.map((r,i)=>({bend:r.bend,speed:deformation.states[i].speed,velocity:[...deformation.states[i].velocity],flatness:Math.max(...Array.from({length:r.geometry.attributes.position.count},(_,k)=>Math.abs(r.geometry.attributes.position.getZ(k)))),uvVersion:r.geometry.attributes.uv.version,uvTransform:[...r.film.repeat.toArray(),...r.film.offset.toArray()],position:meshes[i].position.toArray(),quaternion:meshes[i].quaternion.toArray(),caption:r.caption.diagnostics}))

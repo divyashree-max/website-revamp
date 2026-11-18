@@ -51,3 +51,41 @@
 /* Static/reduced-motion video, gradient and title share this clipped front. */
 [data-simple] .stories-ring .story-front{overflow:hidden}
 [data-simple] .story-caption{position:absolute;inset:auto 0 0;z-index:3;margin:0;padding:42px 6.25% 6.25%;background:linear-gradient(transparent,rgba(0,0,0,.76));font:400 clamp(12px,3.2vw,17px)/1.22 var(--font-interface);color:var(--ink);pointer-events:none}
+.impact-statement{position:absolute;inset:0;z-index:0;display:grid;place-content:center;pointer-events:none;color:var(--ink);text-align:center;padding:160px 5vw 130px}
+.impact-statement h2{font-family:var(--font-display,var(--font-interface));font-weight:700;font-size:clamp(48px,7.2vw,112px);font-kerning:normal;text-transform:none;letter-spacing:-.045em;line-height:1.01;margin:0;width:90vw;max-width:1420px}
+.impact-line{display:block;perspective:1000px;padding:.1em 0;margin:-.1em 0;overflow:clip}
+.impact-line-inner{display:block;transform-origin:50% 100%;opacity:0}
+.impact-mobile-break{display:none}
+@media(max-width:700px){.impact-statement{padding:180px 6vw 150px}.impact-statement h2{width:88vw;font-size:clamp(29px,7.9vw,57px);line-height:1.06}.impact-mobile-break{display:block}}
+[data-simple] .impact-statement{position:relative;display:grid;min-height:70svh;padding:100px 0 70px;margin-top:70px}
+[data-simple] .impact-statement h2{width:100%}
+[data-simple] .impact-line{overflow:visible}
+[data-simple] .impact-line-inner{opacity:1!important;transform:none!important}
+/* Text fades as complete lines behind the clearing planes, without a hard letter wipe. */
+.impact-line{overflow:visible}
+[data-simple] .stories-pin{display:flex;flex-direction:column}
+[data-simple] .stories-space{order:0}
+[data-simple] .stories-footer{order:1}
+[data-simple] .impact-statement{order:2}
+.is-stories .brand[src*="svg"]{filter:invert(.97)}.is-stories .brand:not([src*="svg"]){filter:none}
+/* One headline moves into the editorial About column; right-hand text scrolls natively. */
+.stories-bounds{height:var(--stories-pin-height,calc(100% - var(--stories-tail)))}
+.impact-statement .impact-line-inner{display:inline-block;max-width:100%}
+.about-content{position:absolute;left:60%;right:6%;top:calc(var(--about-dock-end,810svh) + var(--about-copy-offset,20svh));color:var(--ink);font-family:Helvetica,Arial,sans-serif}
+.about-reveal{overflow:clip}
+.about-reveal-inner{opacity:0;transform:translate3d(0,24px,0)}
+.about-copy{font-size:clamp(18px,1.55vw,27px);line-height:1.5;letter-spacing:-.018em;margin:0 0 28px;max-width:38ch}
+.about-statistics{margin:80px 0 0;padding:0}
+.about-stat{border-top:1px solid #fffbed30;min-height:clamp(280px,40svh,430px);padding:48px 0 72px}
+.about-stat .about-reveal-inner{display:flex;flex-direction:column}
+.about-stat dt{order:1;font-size:clamp(16px,1.3vw,22px);line-height:1.4;letter-spacing:-.01em}
+.about-stat dd{order:0;font:700 clamp(90px,9.5vw,180px)/1 var(--font-display,var(--font-interface));letter-spacing:-.055em;margin:0 0 16px;font-variant-numeric:lining-nums}
+@media(max-width:700px){
+ .about-content{position:relative;inset:auto;width:88%;margin:calc(-100svh + var(--about-copy-offset,320px)) auto 0}
+ .about-copy{font-size:18px;line-height:1.55;max-width:none}
+ .about-statistics{margin-top:56px}.about-stat{min-height:260px;padding:40px 0 64px}.about-stat dd{font-size:clamp(88px,25vw,130px)}
+}
+[data-simple] .stories-bounds{height:auto}
+[data-simple] .impact-statement h2{transform:none!important}
+[data-simple] .about-content{position:relative;inset:auto!important;width:min(88%,800px);margin:80px auto 0}
+[data-simple] .about-reveal-inner{opacity:1!important;transform:none!important}
